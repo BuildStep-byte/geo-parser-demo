@@ -1,3 +1,4 @@
+
 # geo-parser-demo
 
 Надёжный демо-скрипт на Python: шаг за шагом собираем данные и сохраняем в Excel. Проект от BuildStep-byte.
@@ -27,3 +28,5 @@
 1. Установи зависимости:
    ```bash
    pip install pandas openpyxl
+## Пример результата
+<img width="436" height="187" alt="result_screenshot png" src="https://github.com/user-attachments/assets/929e59d9-921e-4134-af5b-2e1474662ed5" />
