@@ -53,19 +53,3 @@ def save_to_excel(data, filename="fastfood_demo.xlsx"):
 if __name__ == "__main__":
     data = fetch_data()
     save_to_excel(data)
-import pandas as pd
-
-# загрузка данных
-df = pd.read_excel('fastfood_demo.xlsx')
-
-# группировка по району и расчёт среднего рейтинга
-avg_rating_by_district = df.groupby('district')['rating'].mean().reset_index()
-
-# переименование колонки для читаемости
-avg_rating_by_district.rename(columns={'rating': 'avg_rating'}, inplace=True)
-
-# вывод результата
-print(avg_rating_by_district)
-
-# (опционально) сохранение в новый файл
-avg_rating_by_district.to_excel('avg_rating_by_district.xlsx', index=False)
