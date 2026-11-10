@@ -25,22 +25,28 @@ def fetch_data():
     for district in districts:
         time.sleep(0.5)  # Пауза для имитации лимитов API
 
-        # Получаем список организаций или пустой список, если ключа нет
-        organizations = MOCK_RESPONSES.get(district, [])
+        try:
+            # Получаем список организаций или пустой список, если ключа нет
+            organizations = MOCK_RESPONSES.get(district, [])
 
-        # Если список пустой — пропускаем итерацию, скрипт не падает
-        if not organizations:
+            # Если список пустой — пропускаем итерацию, скрипт не падает
+            if not organizations:
+                continue
+
+            for org in organizations:
+                # .get() с дефолтами защищает от KeyError
+                # rating оставляем None, если его нет — pandas корректно учтёт это в mean()
+                record = {
+                    "district": district,
+                    "name": org.get("name", "Без названия"),
+                    "description": org.get("description", "Нет описания"),
+                    "rating": org.get("rating")
+                }
+                all_records.append(record)
+
+        except Exception as e:
+            print(f"Ошибка при обработке района {district}: {e}")
             continue
-
-        for org in organizations:
-            # .get() с дефолтными значениями защищает от KeyError и None
-            record = {
-                "district": district,
-                "name": org.get("name", "Без названия"),
-                "description": org.get("description", "Нет описания"),
-                "rating": org.get("rating", "Нет рейтинга")
-            }
-            all_records.append(record)
 
     return all_records
 
@@ -50,23 +56,18 @@ def save_to_excel(data, filename="fastfood_demo.xlsx"):
     df.to_excel(filename, index=False)
     print(f"Данные успешно сохранены в {filename}")
 
+def calculate_avg_rating(filename="fastfood_demo.xlsx"):
+    """Шаг 3: считаем средний рейтинг по районам и сохраняем сводку."""
+    df = pd.read_excel(filename)
+
+    avg_rating_by_district = df.groupby("district")["rating"].mean().reset_index()
+    avg_rating_by_district.rename(columns={"rating": "avg_rating"}, inplace=True)
+
+    print(avg_rating_by_district)
+    avg_rating_by_district.to_excel("avg_rating_by_district.xlsx", index=False)
+    print("Сводка сохранена в avg_rating_by_district.xlsx")
+
 if __name__ == "__main__":
     data = fetch_data()
     save_to_excel(data)
-    
-import pandas as pd
-
-# загрузка данных
-df = pd.read_excel('fastfood_demo.xlsx')
-
-# группировка по району и расчёт среднего рейтинга
-avg_rating_by_district = df.groupby('district')['rating'].mean().reset_index()
-
-# переименование колонки для читаемости
-avg_rating_by_district.rename(columns={'rating': 'avg_rating'}, inplace=True)
-
-# вывод результата
-print(avg_rating_by_district)
-
-# (опционально) сохранение в новый файл
-avg_rating_by_district.to_excel('avg_rating_by_district.xlsx', index=False)
+    calculate_avg_rating()
